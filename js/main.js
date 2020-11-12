@@ -171,11 +171,11 @@ const displayController = (() => {
 
     headerCenter.textContent = "";
     if (result == "draw") {
-      utility.createTextBox(headerCenter, "h1", "", `It's a Draw`);
+      utility.createTextBox(headerCenter, "h3", "", `It's a Draw`);
     } else if (result == "win") {
-      utility.createTextBox(headerCenter, "h1", "", `Winner: ${playerObj.name}`);
+      utility.createTextBox(headerCenter, "h3", "", `Winner: ${playerObj.name}`);
     } else {
-      utility.createTextBox(headerCenter, "h1", "", `Turn: ${playerObj.name}`);
+      utility.createTextBox(headerCenter, "h3", "", `Turn: ${playerObj.name}`);
     }
   };
 
@@ -360,8 +360,8 @@ const splashController = (() => {
     formContainer.setAttribute("id", "newGameForm");
     formContainer.setAttribute("autocomplete", "off");
     formContainer.addEventListener("submit", (e) => _submitNewGame(e));
-    formContainer.textContent = "Enter your names:";
   
+    utility.createTextBox(formContainer, "h3", "", "Enter your names:");
     utility.createTypedInput(formContainer, "X", "text");
     utility.createTypedInput(formContainer, "O", "text");
     _createFormControls(formContainer);
@@ -390,7 +390,31 @@ const splashController = (() => {
     canvas.appendChild(welcomeContainer);
   }
 
-  const generateGameStartPage = () => {
+  const _generateStartChoicePage = () => {
+    const canvas = _generateCanvas();
+    const container = document.createElement("div");
+    container.setAttribute("class", "startchoice");
+
+    const title = utility.createTextBox(container, "h3", "startchoice__title", "Choose first mover:");
+    const playerOneButton = utility.createButton(container, "startchoice__button", "button", "Player One");
+    const playerTwoButton = utility.createButton(container, "startchoice__button", "button", "Player Two");
+    const randomPlayerButton = utility.createButton(container, "startchoice__button", "button", "Random");
+
+    playerOneButton.addEventListener("click", () => {
+      gameController.startGame("playerOne");
+      _clearCanvas();
+    });
+    playerTwoButton.addEventListener("click", () => {
+      _clearCanvas();
+      gameController.startGame("playerTwo");
+    });
+    randomPlayerButton.addEventListener("click", () => _generateRandomStartPage());
+
+    canvas.appendChild(container);
+    _body.appendChild(canvas);
+  }
+
+  const _generateRandomStartPage = () => {
     const startingPlayer = gameController.startGame();
     const name = startingPlayer.name;
     const icon = startingPlayer.icon;
@@ -413,7 +437,7 @@ const splashController = (() => {
 
     gameController.createPlayer("playerOne", nameOne, "O");
     gameController.createPlayer("playerTwo", nameTwo, "X");
-    generateGameStartPage();
+    _generateStartChoicePage();
   }
 
   const _clearCanvas = () => {
@@ -433,7 +457,7 @@ const splashController = (() => {
     const newPlayersButton = utility.createButton(endContainer, "end__button", "button", "New Players");
     newPlayersButton.addEventListener("click", () => generateWelcome());
     const samePlayersButton = utility.createButton(endContainer, "end__button", "button", "Same Players");
-    samePlayersButton.addEventListener("click", () => generateGameStartPage());
+    samePlayersButton.addEventListener("click", () => _generateStartChoicePage());
 
     canvas.appendChild(endContainer);
     _body.appendChild(canvas);
@@ -447,7 +471,6 @@ const splashController = (() => {
 
   return {
     generateWelcome,
-    generateGameStartPage,
     generateEndGamePage,
   }
 })();
