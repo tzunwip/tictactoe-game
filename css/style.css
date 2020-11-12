@@ -1,0 +1,190 @@
+@import url("https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css");
+
+:root {
+  font-family: 'Fredericka the Great', cursive;
+  --icon-font: 'Gochi Hand', cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid: auto 1fr auto / auto-flow;
+}
+
+.headercontainer {
+  background: gray;
+  width: 90vw;
+  padding: 0.5rem;
+  border: 0.1rem solid black;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  justify-self: center;
+}
+
+.maincontainer {
+  display: grid;
+  place-content: center;
+}
+
+.footercontainer {
+  background: gray;
+  width: 90vw;
+  padding: 0.5rem;
+  border: 0.1rem solid black;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  justify-self: center;
+}
+
+.header {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}
+
+.header__center {
+  display: grid;
+  grid: none / auto-flow;
+  gap: 1rem;
+}
+
+.board {
+  place-self: center;
+  width: min(70vh, 90vw);
+  height: min(70vh, 90vw);
+  max-width: 50rem;
+  max-height: 50rem;
+  display: grid;
+  grid: repeat(3, 1fr) / repeat(3, 1fr);
+  gap: 0.2rem;
+  background: black;
+}
+
+.board__grid {
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  font-family: var(--icon-font);
+  font-size: min(28vh, 36vw);
+  line-height: 0;
+}
+
+.board__grid--win {
+  background: red;
+}
+          
+.footer {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-evenly;
+}
+
+.canvas {
+  height: 100vh;
+  width: 100vw;
+  background: rgba(75, 75, 75, 0.582);
+  backdrop-filter: blur(10px);
+  position: fixed;
+  display: grid;
+  place-content: center;
+}
+
+.form, .start, .welcome, .end {
+  width: min(25rem, 95vw);
+  height: min(auto, 95vw, 95vh);
+  position: relative;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 15px 31px 0 rgba(78, 78, 78, 0.829);
+  padding: 1.5rem;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.form__input {
+  width: 100%;
+  background: rgba(255, 187, 0, 0.507);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  place-content: center;
+  place-items: center;
+  flex-flow: row wrap;
+}
+
+.input__label {
+  Width: 4rem;
+  font-family: var(--icon-font);
+  font-size: 4rem;
+  line-height: 70%;
+}
+
+.input__field {
+  width: min(17rem, 100%);
+  padding: 0.5rem;
+  border: 0.1rem solid black;
+  border-radius: 0.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+  outline: none;
+}
+
+.form__control {
+  display: grid;
+  grid: none / auto-flow;
+  gap: 1rem;
+}
+
+.form__button {
+  width: 7rem;
+  padding: 0.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  border: 0.1rem solid black;
+  border-radius: 0.5rem;
+}
+
+/* .welcome {
+  width: min(30rem, 95vh, 95vw);
+  height: min(30rem, 95vh, 95vw);
+  background: white;
+  padding: 1rem;
+  display: grid;
+  grid: 1fr auto auto / none;
+  gap: 1rem;
+  place-items: center;
+  place-content: center;
+} */
+
+.welcome__title {
+  text-align: center;
+}
+
+.welcome__button, .end__button {
+  width: 11rem;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 0.1rem solid black;
+}
+
+.start__icon {
+  font-family: var(--icon-font);
+  font-size: 8rem;
+}
