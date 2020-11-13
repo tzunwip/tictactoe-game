@@ -205,45 +205,33 @@ const gameController = (() => {
   const _players = {playerOne: {}, playerTwo: {}};
   let _activePlayer;
   let _winningPlayer;
-  let _boardStatus;
+  let boardStatus = {};
 
   const _setDefaultVariables = () => {
     _activePlayer = "";
     _winningPlayer = "";
-    _boardStatus = {
-      "0": "",
-      "1": "",
-      "2": "",
-      "3": "",
-      "4": "",
-      "5": "",
-      "6": "",
-      "7": "",
-      "8": ""
-    };
+    for (let i = 0; i < 9; i++) {
+      boardStatus[i] = "";
+    }
   };
-
-  const _initVariables = (() => {
-    _setDefaultVariables();
-    Object.preventExtensions(_players);
-    Object.preventExtensions(_boardStatus);
-  })();
 
   const createPlayer = (playerID, name, icon) => {
     _players[playerID] = {name, icon};
   };
 
   const startGame = (playerID) => {
-    if (_activePlayer) {
-      displayController.clearBoard();
-      _setDefaultVariables();
-    };
+    displayController.clearBoard();
+    _setDefaultVariables();
 
-    _playeridCheck(playerID) ? 
+    (playerID) ? 
       _activePlayer = playerID:
       _activePlayer = _chooseRandomPlayer();
 
     displayController.updateCommentary(_players[_activePlayer]);
+
+    if (_players[_activePlayer].name == "Computer") {
+      playMove(bot.getBestMove(boardStatus, "playerTwo"));
+    };
 
     return _players[_activePlayer];
   };
@@ -252,20 +240,19 @@ const gameController = (() => {
     return ["playerOne", "playerTwo"][Math.round(Math.random())];
   };
 
-  const _playeridCheck = (playerID) => {
-    playerID === "playerOne" || playerID === "playerTwo" ? true : false;
-  };
-
   const playMove = (gridID) => {
     if (_winningPlayer || _checkDraw()) {
-      splashController.generateEndGamePage();
-    } else if (!_boardStatus[gridID] && !_winningPlayer) {
-      _boardStatus[gridID] = _activePlayer;
+      splashController.generateEndGamePage(_players.playerOne.name, _players.playerTwo.name);
+    } else if (!boardStatus[gridID]) {
+      boardStatus[gridID] = _activePlayer;
       displayController.displayMove(gridID, _players[_activePlayer].icon);
       
-      if (!_checkWin(gridID, _activePlayer) && !_checkDraw()) {
+      if (!checkWin(gridID, _activePlayer, true) && !_checkDraw()) {
         _switchActivePlayer();
         displayController.updateCommentary(_players[_activePlayer]);
+        if (_players[_activePlayer].name == "Computer") {
+          playMove(bot.getBestMove(boardStatus, "playerTwo"));
+        }
       }
     };
   };
@@ -276,14 +263,14 @@ const gameController = (() => {
       _activePlayer = "playerOne";
   }
   
-  const _returnWinningCombinations = (searchParameters, playerID) => {
+  const _returnWinningCombinations = (searchRowColDiag, playerID) => {
     const winArray = [];
     
-    searchParameters.forEach(string => {
+    searchRowColDiag.forEach(string => {
       const DOMelementArray = Array.from(document.querySelectorAll(`.${string}`));
       
       const isWin = DOMelementArray.every(el => {
-        return playerID == _boardStatus[el.id];
+        return playerID == boardStatus[el.id];
       });
       
       if (isWin) {
@@ -294,20 +281,24 @@ const gameController = (() => {
     return winArray;
   }
 
-  const _checkWin = (gridID, playerID) => {
+  const checkWin = (gridID, playerID, display) => {
     const combinations = utility.returnCombinations(gridID).split(" ");
     const winningCombinations = _returnWinningCombinations(combinations, playerID);
 
     if (winningCombinations.length) {
-      _winningPlayer = _activePlayer;
-      displayController.displayWinningGrids(winningCombinations);
-      displayController.updateCommentary(_players[_winningPlayer], "win");
-      return true;
+      if (display) {
+        _winningPlayer = _activePlayer;
+        displayController.displayWinningGrids(winningCombinations);
+        displayController.updateCommentary(_players[_winningPlayer], "win");
+      }
+
+      return winningCombinations
     };
+
   }
 
   const _checkDraw = () => {
-    const boardValues = Object.values(_boardStatus);
+    const boardValues = Object.values(boardStatus);
     const isBoardFull = boardValues.every(el => el);
 
     if (!_winningPlayer && isBoardFull) {
@@ -320,7 +311,8 @@ const gameController = (() => {
     createPlayer, 
     startGame, 
     playMove,
-    _checkDraw,
+    checkWin,
+    boardStatus,
   };
 })();
 
@@ -385,19 +377,23 @@ const splashController = (() => {
     twoPlayerButton.addEventListener("click", () => _generateTwoPlayerForm());
     
     const challengeButton = utility.createButton(welcomeContainer, "welcome__button", "button", "Challenge Computer");
-    // twoPlayerButton.addEventListener("click", () => _generateTwoPlayerForm());
+    challengeButton.addEventListener("click", () => {
+      gameController.createPlayer("playerOne", "You", "X");
+      gameController.createPlayer("playerTwo", "Computer", "O");
+      _generateStartChoicePage("You", "Computer");
+    });
     
     canvas.appendChild(welcomeContainer);
   }
 
-  const _generateStartChoicePage = () => {
+  const _generateStartChoicePage = (playerOne, playerTwo) => {
     const canvas = _generateCanvas();
     const container = document.createElement("div");
     container.setAttribute("class", "startchoice");
 
     const title = utility.createTextBox(container, "h3", "startchoice__title", "Choose first mover:");
-    const playerOneButton = utility.createButton(container, "startchoice__button", "button", "Player One");
-    const playerTwoButton = utility.createButton(container, "startchoice__button", "button", "Player Two");
+    const playerOneButton = utility.createButton(container, "startchoice__button", "button", `${playerOne}`);
+    const playerTwoButton = utility.createButton(container, "startchoice__button", "button", `${playerTwo}`);
     const randomPlayerButton = utility.createButton(container, "startchoice__button", "button", "Random");
 
     playerOneButton.addEventListener("click", () => {
@@ -425,7 +421,11 @@ const splashController = (() => {
     startContainer.addEventListener("click", () => _clearCanvas());
 
     utility.createTextBox(startContainer, "h1", "start__icon", icon);
-    utility.createTextBox(startContainer, "h2", "start__name", `${name} moves first`);
+    if (name == "You") {
+      utility.createTextBox(startContainer, "h2", "start__name", "You move first");
+    } else {
+      utility.createTextBox(startContainer, "h2", "start__name", `${name} moves first`);
+    };
 
     canvas.appendChild(startContainer);
   }
@@ -437,7 +437,7 @@ const splashController = (() => {
 
     gameController.createPlayer("playerOne", nameOne, "O");
     gameController.createPlayer("playerTwo", nameTwo, "X");
-    _generateStartChoicePage();
+    _generateStartChoicePage(nameOne, nameTwo);
   }
 
   const _clearCanvas = () => {
@@ -447,7 +447,7 @@ const splashController = (() => {
     })
   }
 
-  const generateEndGamePage = () => {
+  const generateEndGamePage = (playerOne, playerTwo) => {
     const canvas = _generateCanvas();
 
     const endContainer = document.createElement("div");
@@ -457,20 +457,127 @@ const splashController = (() => {
     const newPlayersButton = utility.createButton(endContainer, "end__button", "button", "New Players");
     newPlayersButton.addEventListener("click", () => generateWelcome());
     const samePlayersButton = utility.createButton(endContainer, "end__button", "button", "Same Players");
-    samePlayersButton.addEventListener("click", () => _generateStartChoicePage());
+    samePlayersButton.addEventListener("click", () => _generateStartChoicePage(playerOne, playerTwo));
 
     canvas.appendChild(endContainer);
     _body.appendChild(canvas);
   }
-
-  // const _capitalizeFirstChar = (str) => {
-  //   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  // }
 
   generateWelcome();
 
   return {
     generateWelcome,
     generateEndGamePage,
+  }
+})();
+
+const bot = (() => {
+  const _winLines = [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6],
+  ];
+
+  const _getAvailable = (board) => {
+    const emptyArray = [];
+
+    for (let i = 0; i < 9; i++) {
+      if (!board[i]) {emptyArray.push(i)}
+    };
+
+    return emptyArray
+  }
+
+  const _getOccupied = (board, playerID) => {
+    const occupiedGrids = [];
+
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] == playerID) {occupiedGrids.push(i)};
+    }
+
+    return occupiedGrids
+  }
+
+  const _winCheck = (board, playerID) => {
+    const occupiedGrids = _getOccupied(board, playerID);
+
+    return _winLines.some((array) => {
+      return array.every((num) => {
+        return occupiedGrids.includes(num);
+      });
+    })
+  }
+
+  const _drawCheck = (board) => {
+    return board.every((el) => el)
+  }
+
+  const getBestMove = (currentBoard, activePlayer) => {
+    let newBoard = Object.values(currentBoard);
+
+    return _minimax(newBoard, 0, activePlayer).id;
+  }
+
+  const _minimax = (board, depth = 0, activePlayer) => {
+    if (_winCheck(board, "playerOne")) {
+      return {evaluation: 10 - depth};
+    } else if (_winCheck(board, "playerTwo")) {
+      return {evaluation: -10 + depth};
+    } else if (_drawCheck(board)) {
+      return {evaluation: 0};
+    };
+
+    let moves = [];
+    let availableMoves = _getAvailable(board);
+
+    for(let i = 0; i < availableMoves.length; i++) {
+      let move = {};
+      move.id = availableMoves[i];
+
+      let basePosition = board[move.id];
+      if (activePlayer == "playerOne") {
+        board[move.id] = "playerOne";
+        move.evaluation = _minimax(board, depth + 1, "playerTwo").evaluation;
+      } else {
+        board[move.id] = "playerTwo";
+        move.evaluation = _minimax(board, depth + 1, "playerOne").evaluation;
+      }
+      board[move.id] = basePosition;
+
+      moves.push(move);
+    };
+
+    let bestMove;
+
+    if (activePlayer == "playerOne") {
+      let bestEvaluation = -Infinity;
+
+      moves.forEach((obj) => {
+        if (obj.evaluation > bestEvaluation) {
+          bestEvaluation = obj.evaluation;
+          bestMove = obj;
+        }
+      })
+    } else {
+      let bestEvaluation = +Infinity;
+
+      moves.forEach((obj) => {
+        if (obj.evaluation < bestEvaluation) {
+          bestEvaluation = obj.evaluation;
+          bestMove = obj;
+        }
+      })
+    }
+
+    return bestMove
+  };
+
+  return {
+    getBestMove,
   }
 })();
