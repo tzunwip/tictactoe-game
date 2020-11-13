@@ -223,21 +223,19 @@ const gameController = (() => {
     displayController.clearBoard();
     _setDefaultVariables();
 
-    (playerID) ? 
-      _activePlayer = playerID:
-      _activePlayer = _chooseRandomPlayer();
+    (playerID) ? _activePlayer = playerID : _chooseRandomPlayer();
 
     displayController.updateCommentary(_players[_activePlayer]);
 
-    if (_players[_activePlayer].name == "Computer") {
+    if (_activePlayer === "playerTwo" && _players[_activePlayer].name === "Computer") {
       playMove(bot.getBestMove(boardStatus, "playerTwo"));
     };
-
-    return _players[_activePlayer];
   };
 
   const _chooseRandomPlayer = () => {
-    return ["playerOne", "playerTwo"][Math.round(Math.random())];
+    randomPlayer = ["playerOne", "playerTwo"][Math.round(Math.random())];
+    _activePlayer = randomPlayer;
+    splashController.generateRandomStartPage(_players[randomPlayer].name, _players[randomPlayer].icon);
   };
 
   const playMove = (gridID) => {
@@ -404,16 +402,13 @@ const splashController = (() => {
       _clearCanvas();
       gameController.startGame("playerTwo");
     });
-    randomPlayerButton.addEventListener("click", () => _generateRandomStartPage());
+    randomPlayerButton.addEventListener("click", () => gameController.startGame());
 
     canvas.appendChild(container);
     _body.appendChild(canvas);
   }
 
-  const _generateRandomStartPage = () => {
-    const startingPlayer = gameController.startGame();
-    const name = startingPlayer.name;
-    const icon = startingPlayer.icon;
+  const generateRandomStartPage = (name, icon) => {
     const canvas = _generateCanvas();
 
     const startContainer = document.createElement("div");
@@ -467,6 +462,7 @@ const splashController = (() => {
 
   return {
     generateWelcome,
+    generateRandomStartPage,
     generateEndGamePage,
   }
 })();
