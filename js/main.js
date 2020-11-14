@@ -227,8 +227,8 @@ const gameController = (() => {
 
     displayController.updateCommentary(_players[_activePlayer]);
 
-    if (_activePlayer === "playerTwo" && _players[_activePlayer].isComputer) {
-      playMove(bot.getBestMove(boardStatus, "playerTwo", _players[_activePlayer].name));
+    if (_players[_activePlayer].isComputer) {
+      playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
     };
   };
 
@@ -249,7 +249,7 @@ const gameController = (() => {
         _switchActivePlayer();
         displayController.updateCommentary(_players[_activePlayer]);
         if (_players[_activePlayer].isComputer) {
-          playMove(bot.getBestMove(boardStatus, "playerTwo", _players[_activePlayer].name));
+          playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
         }
       }
     };
