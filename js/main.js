@@ -215,8 +215,8 @@ const gameController = (() => {
     }
   };
 
-  const createPlayer = (playerID, name, icon) => {
-    _players[playerID] = {name, icon};
+  const createPlayer = (playerID, name, icon, isComputer) => {
+    _players[playerID] = {name, icon, isComputer};
   };
 
   const startGame = (playerID) => {
@@ -227,8 +227,8 @@ const gameController = (() => {
 
     displayController.updateCommentary(_players[_activePlayer]);
 
-    if (_activePlayer === "playerTwo" && _players[_activePlayer].name === "Computer") {
-      playMove(bot.getBestMove(boardStatus, "playerTwo"));
+    if (_activePlayer === "playerTwo" && _players[_activePlayer].isComputer) {
+      playMove(bot.getBestMove(boardStatus, "playerTwo", _players[_activePlayer].name));
     };
   };
 
@@ -248,8 +248,8 @@ const gameController = (() => {
       if (!checkWin(gridID, _activePlayer, true) && !_checkDraw()) {
         _switchActivePlayer();
         displayController.updateCommentary(_players[_activePlayer]);
-        if (_players[_activePlayer].name == "Computer") {
-          playMove(bot.getBestMove(boardStatus, "playerTwo"));
+        if (_players[_activePlayer].isComputer) {
+          playMove(bot.getBestMove(boardStatus, "playerTwo", _players[_activePlayer].name));
         }
       }
     };
@@ -374,11 +374,18 @@ const splashController = (() => {
     const twoPlayerButton = utility.createButton(welcomeContainer, "welcome__button", "button", "Two Player Game");
     twoPlayerButton.addEventListener("click", () => _generateTwoPlayerForm());
     
-    const challengeButton = utility.createButton(welcomeContainer, "welcome__button", "button", "Challenge Computer");
-    challengeButton.addEventListener("click", () => {
-      gameController.createPlayer("playerOne", "You", "X");
-      gameController.createPlayer("playerTwo", "Computer", "O");
-      _generateStartChoicePage("You", "Computer");
+    const challengeMinimaxButton = utility.createButton(welcomeContainer, "welcome__button", "button", "Challenge Minimax");
+    challengeMinimaxButton.addEventListener("click", () => {
+      gameController.createPlayer("playerOne", "You", "X", false);
+      gameController.createPlayer("playerTwo", "Minimax", "O", true);
+      _generateStartChoicePage("You", "Minimax");
+    });
+
+    const challengeAlphaBetaButton = utility.createButton(welcomeContainer, "welcome__button", "button", "Challenge alphaBeta");
+    challengeAlphaBetaButton.addEventListener("click", () => {
+      gameController.createPlayer("playerOne", "You", "X", false);
+      gameController.createPlayer("playerTwo", "alphaBeta", "O", true);
+      _generateStartChoicePage("You", "alphaBeta");
     });
     
     canvas.appendChild(welcomeContainer);
@@ -430,8 +437,8 @@ const splashController = (() => {
     const nameOne = e.target.elements["O"].value;
     const nameTwo = e.target.elements["X"].value;
 
-    gameController.createPlayer("playerOne", nameOne, "O");
-    gameController.createPlayer("playerTwo", nameTwo, "X");
+    gameController.createPlayer("playerOne", nameOne, "O", false);
+    gameController.createPlayer("playerTwo", nameTwo, "X", false);
     _generateStartChoicePage(nameOne, nameTwo);
   }
 
@@ -513,75 +520,65 @@ const bot = (() => {
     return board.every((el) => el)
   }
 
-  const getBestMove = (currentBoard, activePlayer) => {
+  const getBestMove = (currentBoard, activePlayer, botName) => {
     let newBoard = Object.values(currentBoard);
 
-    let minimaxResult = _minimax(newBoard, 0, activePlayer);
-    let alphabetaResult = _alphaBeta(newBoard, 0, activePlayer, -Infinity, Infinity);
-
-    console.log(`Minimax id: ${minimaxResult.id}, value: ${minimaxResult.evaluation}`);
-    console.log(`Alpha Beta id: ${alphabetaResult.id}, value: ${alphabetaResult.value}`);
-
-    return alphabetaResult.id;
+    if (botName === "Minimax") {
+      return _minimax(newBoard, 0, activePlayer).id
+    } else {
+      return _alphaBeta(newBoard, 0, activePlayer, -Infinity, Infinity).id;
+    };
   }
 
-  const _minimax = (board, depth = 0, activePlayer, alpha, beta) => {
+  const _minimax = (board, depth = 0, activePlayer) => {
     if (_winCheck(board, "playerOne")) {
-      return {evaluation: 10 - depth};
+      return {value: 10 - depth};
     } else if (_winCheck(board, "playerTwo")) {
-      return {evaluation: -10 + depth};
+      return {value: -10 + depth};
     } else if (_drawCheck(board)) {
-      return {evaluation: 0};
+      return {value: 0};
     };
 
-    let moves = [];
     let availableMoves = _getAvailable(board);
 
-    for(let i = 0; i < availableMoves.length; i++) {
-      let move = {};
-      move.id = availableMoves[i];
-
-      let basePosition = board[move.id];
-      if (activePlayer == "playerOne") {
-        board[move.id] = "playerOne";
-        move.evaluation = _minimax(board, depth + 1, "playerTwo").evaluation;
-      } else {
-        board[move.id] = "playerTwo";
-        move.evaluation = _minimax(board, depth + 1, "playerOne").evaluation;
-      }
-      board[move.id] = basePosition;
-
-      moves.push(move);
-    };
-
-    let bestMove;
-
     if (activePlayer == "playerOne") {
-      let bestEvaluation = -Infinity;
+      let maxValue = -Infinity;
+      let maxMove = {};
 
-      for (let i = 0; i < moves.length; i++) {
-        let obj = moves[i];
+      for (let i = 0; i < availableMoves.length; i++) {
+        let currentMove = {};
+        currentMove.id = availableMoves[i];
+        board[availableMoves[i]] = activePlayer;
+
+        currentMove.value = _minimax(board, depth + 1, "playerTwo").value;
         
-        if (obj.evaluation > bestEvaluation) {
-          bestEvaluation = obj.evaluation;
-          bestMove = obj;
+        if (currentMove.value > maxValue) {
+          maxValue = currentMove.value;
+          maxMove = currentMove;
         }
+        board[availableMoves[i]] = "";
       }
+      return maxMove
     } else {
-      let bestEvaluation = +Infinity;
+      let minValue = Infinity;
+      let minMove = {};
 
-      for (let i = 0; i < moves.length; i++) {
-        let obj = moves[i];
+      for (let i = 0; i < availableMoves.length; i++) {
+        let currentMove = {};
+        currentMove.id = availableMoves[i];
+        board[availableMoves[i]] = activePlayer;
 
-        if (obj.evaluation < bestEvaluation) {
-          bestEvaluation = obj.evaluation;
-          bestMove = obj;
+        currentMove.value = _minimax(board, depth + 1, "playerOne").value;
+
+        if (currentMove.value < minValue) {
+          minValue = currentMove.value;
+          minMove = currentMove;
         }
+        board[availableMoves[i]] = "";
       }
+      return minMove
     }
-
-    return bestMove
-  };
+  }
 
   const _alphaBeta = (board, depth = 0, activePlayer, alpha, beta) => {
     if (_winCheck(board, "playerOne")) {
