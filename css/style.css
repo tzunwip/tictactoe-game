@@ -1,7 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap");
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css");
-
 :root {
   font-family: 'Fredericka the Great', cursive;
   --icon-font: 'Gochi Hand', cursive;
