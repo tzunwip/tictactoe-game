@@ -516,10 +516,10 @@ const bot = (() => {
   const getBestMove = (currentBoard, activePlayer) => {
     let newBoard = Object.values(currentBoard);
 
-    return _minimax(newBoard, 0, activePlayer).id;
+    return _minimax(newBoard, 0, activePlayer, -Infinity, Infinity).id;
   }
 
-  const _minimax = (board, depth = 0, activePlayer) => {
+  const _minimax = (board, depth = 0, activePlayer, alpha, beta) => {
     if (_winCheck(board, "playerOne")) {
       return {evaluation: 10 - depth};
     } else if (_winCheck(board, "playerTwo")) {
@@ -538,10 +538,10 @@ const bot = (() => {
       let basePosition = board[move.id];
       if (activePlayer == "playerOne") {
         board[move.id] = "playerOne";
-        move.evaluation = _minimax(board, depth + 1, "playerTwo").evaluation;
+        move.evaluation = _minimax(board, depth + 1, "playerTwo", alpha, beta).evaluation;
       } else {
         board[move.id] = "playerTwo";
-        move.evaluation = _minimax(board, depth + 1, "playerOne").evaluation;
+        move.evaluation = _minimax(board, depth + 1, "playerOne", alpha, beta).evaluation;
       }
       board[move.id] = basePosition;
 
@@ -553,21 +553,25 @@ const bot = (() => {
     if (activePlayer == "playerOne") {
       let bestEvaluation = -Infinity;
 
-      moves.forEach((obj) => {
+      for (let i = 0; i < moves.length; i++) {
+        let obj = moves[i];
+        
         if (obj.evaluation > bestEvaluation) {
           bestEvaluation = obj.evaluation;
           bestMove = obj;
         }
-      })
+      }
     } else {
       let bestEvaluation = +Infinity;
 
-      moves.forEach((obj) => {
+      for (let i = 0; i < moves.length; i++) {
+        let obj = moves[i];
+
         if (obj.evaluation < bestEvaluation) {
           bestEvaluation = obj.evaluation;
           bestMove = obj;
         }
-      })
+      }
     }
 
     return bestMove
