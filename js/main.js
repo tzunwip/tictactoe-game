@@ -516,7 +516,13 @@ const bot = (() => {
   const getBestMove = (currentBoard, activePlayer) => {
     let newBoard = Object.values(currentBoard);
 
-    return _minimax(newBoard, 0, activePlayer, -Infinity, Infinity).id;
+    let minimaxResult = _minimax(newBoard, 0, activePlayer);
+    let alphabetaResult = _alphaBeta(newBoard, 0, activePlayer, -Infinity, Infinity);
+
+    console.log(`Minimax id: ${minimaxResult.id}, value: ${minimaxResult.evaluation}`);
+    console.log(`Alpha Beta id: ${alphabetaResult.id}, value: ${alphabetaResult.value}`);
+
+    return alphabetaResult.id;
   }
 
   const _minimax = (board, depth = 0, activePlayer, alpha, beta) => {
@@ -538,10 +544,10 @@ const bot = (() => {
       let basePosition = board[move.id];
       if (activePlayer == "playerOne") {
         board[move.id] = "playerOne";
-        move.evaluation = _minimax(board, depth + 1, "playerTwo", alpha, beta).evaluation;
+        move.evaluation = _minimax(board, depth + 1, "playerTwo").evaluation;
       } else {
         board[move.id] = "playerTwo";
-        move.evaluation = _minimax(board, depth + 1, "playerOne", alpha, beta).evaluation;
+        move.evaluation = _minimax(board, depth + 1, "playerOne").evaluation;
       }
       board[move.id] = basePosition;
 
@@ -576,6 +582,64 @@ const bot = (() => {
 
     return bestMove
   };
+
+  const _alphaBeta = (board, depth = 0, activePlayer, alpha, beta) => {
+    if (_winCheck(board, "playerOne")) {
+      return {value: 10};
+    } else if (_winCheck(board, "playerTwo")) {
+      return {value: -10};
+    } else if (_drawCheck(board)) {
+      return {value: 0};
+    };
+
+    let availableMoves = _getAvailable(board);
+
+    if (activePlayer == "playerOne") {
+      let maxValue = -Infinity;
+      let maxMove = {};
+
+      for (let i = 0; i < availableMoves.length; i++) {
+        let currentMove = {};
+        currentMove.id = availableMoves[i];
+        board[availableMoves[i]] = activePlayer;
+
+        currentMove.value = _alphaBeta(board, depth + 1, "playerTwo", alpha, beta).value;
+        
+        if (currentMove.value > maxValue) {
+          maxValue = currentMove.value;
+          maxMove = currentMove;
+        }
+        alpha = Math.max(alpha, maxMove.value);
+        board[availableMoves[i]] = "";
+        if (beta <= alpha) {
+          break
+        }
+      }
+      return maxMove
+    } else {
+      let minValue = Infinity;
+      let minMove = {};
+
+      for (let i = 0; i < availableMoves.length; i++) {
+        let currentMove = {};
+        currentMove.id = availableMoves[i];
+        board[availableMoves[i]] = activePlayer;
+
+        currentMove.value = _alphaBeta(board, depth + 1, "playerOne", alpha, beta).value;
+
+        if (currentMove.value < minValue) {
+          minValue = currentMove.value;
+          minMove = currentMove;
+        }
+        beta = Math.min(beta, minMove.value);
+        board[availableMoves[i]] = "";
+        if (beta <= alpha) {
+          break
+        }
+      }
+      return minMove
+    }
+  }
 
   return {
     getBestMove,
