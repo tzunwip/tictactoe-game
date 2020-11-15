@@ -231,7 +231,7 @@ const gameController = (() => {
       };
     } else {
       _activePlayer = _chooseRandomPlayer();
-      splashController.generateRandomStartPage(_players[_activePlayer], () => _playBotMove);
+      splashController.generateRandomStartPage(_players[_activePlayer], _playBotMove);
     };
 
     displayController.updateCommentary(_players[_activePlayer]);
