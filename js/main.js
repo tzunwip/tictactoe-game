@@ -162,20 +162,21 @@ const displayController = (() => {
 
   const _convertArraytoClasses = (array) => {
     return array
-      .map(el => "." + el)
+      .map(el => `.${el}`)
       .join(", ");
   }
 
   const updateCommentary = (playerObj, result) => {
     const headerCenter = document.querySelector(".header__center");
+    const name = playerObj.name;
 
     headerCenter.textContent = "";
     if (result == "draw") {
       utility.createTextBox(headerCenter, "h3", "", `It's a Draw`);
     } else if (result == "win") {
-      utility.createTextBox(headerCenter, "h3", "", `Winner: ${playerObj.name}`);
+      utility.createTextBox(headerCenter, "h3", "", name == "You" ? "You win" : `${name} wins`);
     } else {
-      utility.createTextBox(headerCenter, "h3", "", `Turn: ${playerObj.name}`);
+      utility.createTextBox(headerCenter, "h3", "", name == "You" ? "Your turn" : `${name}'s turn`);
     }
   };
 
@@ -224,17 +225,16 @@ const gameController = (() => {
     _setDefaultVariables();
 
     if (playerID) {
-      _activePlayer = playerID
+      _activePlayer = playerID;
+      if (_players[_activePlayer].isComputer) {
+        _playBotMove();
+      };
     } else {
       _activePlayer = _chooseRandomPlayer();
-      splashController.generateRandomStartPage(_players[_activePlayer], () => playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name)));
+      splashController.generateRandomStartPage(_players[_activePlayer], () => _playBotMove);
     };
 
     displayController.updateCommentary(_players[_activePlayer]);
-
-    // if (_players[_activePlayer].isComputer) {
-    //   playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
-    // };
   };
 
   const _chooseRandomPlayer = () => {
@@ -252,11 +252,15 @@ const gameController = (() => {
         _switchActivePlayer();
         displayController.updateCommentary(_players[_activePlayer]);
         if (_players[_activePlayer].isComputer) {
-          playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
+          _playBotMove();
         }
       }
     };
   };
+
+  const _playBotMove = () => {
+    playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
+  }
 
   const _switchActivePlayer = () => {
     _activePlayer === "playerOne" ?
@@ -303,7 +307,7 @@ const gameController = (() => {
     const isBoardFull = boardValues.every(el => el);
 
     if (!_winningPlayer && isBoardFull) {
-      displayController.updateCommentary(null, "draw");
+      displayController.updateCommentary({}, "draw");
       return true;
     }
   }
