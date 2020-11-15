@@ -359,8 +359,8 @@ const splashController = (() => {
     formContainer.addEventListener("submit", (e) => _submitNewGame(e));
   
     utility.createTextBox(formContainer, "h3", "", "Enter your names:");
-    utility.createTypedInput(formContainer, "X", "text");
     utility.createTypedInput(formContainer, "O", "text");
+    utility.createTypedInput(formContainer, "X", "text");
     _createFormControls(formContainer);
   
     canvas.appendChild(formContainer);
