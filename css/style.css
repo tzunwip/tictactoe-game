@@ -12,6 +12,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+
+/* hides scrollbar */
+::-webkit-scrollbar { 
+  display: none; /* Chrome Safari */
 }
 
 body {
@@ -51,15 +58,13 @@ body {
 }
 
 .header {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
+  width: 100%;
+  overflow-x: scroll;
 }
 
-.header__center {
-  display: grid;
-  grid: none / auto-flow;
-  gap: 1rem;
+.header__center > h3 {
+  white-space: nowrap;  
+  text-align: center;
 }
 
 .board {
@@ -202,6 +207,7 @@ body {
   padding: 0.5rem;
   border-radius: 0.5rem;
   border: 0.1rem solid black;
+  overflow: scroll;
 }
 
 .start__icon {
