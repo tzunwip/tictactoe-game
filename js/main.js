@@ -223,19 +223,22 @@ const gameController = (() => {
     displayController.clearBoard();
     _setDefaultVariables();
 
-    (playerID) ? _activePlayer = playerID : _chooseRandomPlayer();
+    if (playerID) {
+      _activePlayer = playerID
+    } else {
+      _activePlayer = _chooseRandomPlayer();
+      splashController.generateRandomStartPage(_players[_activePlayer], () => playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name)));
+    };
 
     displayController.updateCommentary(_players[_activePlayer]);
 
-    if (_players[_activePlayer].isComputer) {
-      playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
-    };
+    // if (_players[_activePlayer].isComputer) {
+    //   playMove(bot.getBestMove(boardStatus, _activePlayer, _players[_activePlayer].name));
+    // };
   };
 
   const _chooseRandomPlayer = () => {
-    randomPlayer = ["playerOne", "playerTwo"][Math.round(Math.random())];
-    _activePlayer = randomPlayer;
-    splashController.generateRandomStartPage(_players[randomPlayer].name, _players[randomPlayer].icon);
+    return ["playerOne", "playerTwo"][Math.round(Math.random())];
   };
 
   const playMove = (gridID) => {
@@ -415,18 +418,23 @@ const splashController = (() => {
     _body.appendChild(canvas);
   }
 
-  const generateRandomStartPage = (name, icon) => {
+  const generateRandomStartPage = (activePlayerObj, getBestMoveCallback) => {
     const canvas = _generateCanvas();
 
     const startContainer = document.createElement("div");
     startContainer.setAttribute("class", "start");
-    startContainer.addEventListener("click", () => _clearCanvas());
+    startContainer.addEventListener("click", () => {
+      _clearCanvas()
+      if (activePlayerObj.isComputer) {
+        getBestMoveCallback();
+      }
+    });
 
-    utility.createTextBox(startContainer, "h1", "start__icon", icon);
-    if (name == "You") {
+    utility.createTextBox(startContainer, "h1", "start__icon", activePlayerObj.icon);
+    if (activePlayerObj.name == "You") {
       utility.createTextBox(startContainer, "h2", "start__name", "You move first");
     } else {
-      utility.createTextBox(startContainer, "h2", "start__name", `${name} moves first`);
+      utility.createTextBox(startContainer, "h2", "start__name", `${activePlayerObj.name} moves first`);
     };
 
     canvas.appendChild(startContainer);
