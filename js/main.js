@@ -121,7 +121,7 @@ const displayController = (() => {
 
   const _populateHeaderFooter = () => {
     const headerCenter = document.querySelector(".header__center");
-    const headerTitle = document.createElement("h1");
+    const headerTitle = document.createElement("h2");
     headerTitle.setAttribute("class", "header__title");
     headerTitle.textContent = "Tic Tac Toe";
     headerCenter.appendChild(headerTitle);

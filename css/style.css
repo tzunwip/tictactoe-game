@@ -58,11 +58,11 @@ body {
 }
 
 .header {
-  width: 100%;
+  width: 110%;
   overflow-x: scroll;
 }
 
-.header__center > h3 {
+.header__center {
   white-space: nowrap;  
   text-align: center;
 }
